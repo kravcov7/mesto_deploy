@@ -33,6 +33,24 @@ app.use((req, res) => {
   res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
 });
 
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+  if (err.name === 'ValidationError') {
+    return res.status(400).send(`Данные не прошли проверку: ${err.message}`);
+  }
+  if (err.name === 'DocumentNotFoundError') {
+    return res.status(404).send({ message: 'Документ не найден' });
+  }
+  if (err.code === 11000) {
+    return res.status(409).send({ message: 'Конфликт данных: введённые данные уже используются' });
+  }
+  if (err.name === 'CastError') {
+    return res.status(400).send({ message: 'Введён некорректный по форме ID' });
+  }
+  return res.status(statusCode).send({ message: statusCode === 500 ? 'На сервере произошла ошибка' : message });
+});
+
 app.listen(PORT, () => {
   console.log(`Слушаю порт ${PORT}`);
 });

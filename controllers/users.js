@@ -1,39 +1,34 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const ErrorBadRequest = require('../errors/BadRequest');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch(next);
 };
 
-const getUserId = (req, res) => {
+const getUserId = (req, res, next) => {
   User.findById(req.params.id)
     .orFail()
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(404);
-      } else if (err.name === 'ValidationError') {
-        res.status(400);
-      } else {
-        res.status(500);
-      }
-      res.send({ message: err.message });
-    });
+    .catch(next);
 };
 
-const createUser = (req, res) => {
+// eslint-disable-next-line consistent-return
+const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
 
-  if (!password || password.length < 8 || !password.trim()) {
-    res.status(400).send({ message: 'Пароль должен быть более 8 символов' });
-    return;
+  if (!password || !password.trim()) {
+    return next(new ErrorBadRequest('Введите пароль'));
+  }
+  if (password.length < 8) {
+    return next(new ErrorBadRequest('Слишком короткий пароль'));
   }
 
   bcrypt.hash(password, 10)
@@ -47,19 +42,10 @@ const createUser = (req, res) => {
       avatar: user.avatar,
       email: user.email,
     }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400);
-      } else if (err.name === 'MongoError' && err.code === 11000) {
-        res.status(409);
-      } else {
-        res.status(500);
-      }
-      res.send({ message: err.message });
-    });
+    .catch(next);
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const {
     email, password,
   } = req.body;
@@ -74,12 +60,10 @@ const login = (req, res) => {
       res.cookie('jwt', token, { httpOnly: true });
       res.end('Токен отправлен');
     })
-    .catch((err) => {
-      res.status(401).send({ message: err.message });
-    });
+    .catch(next);
 };
 
-const updateUserInfo = (req, res) => {
+const updateUserInfo = (req, res, next) => {
   const { name, about } = req.body;
   const userId = req.user._id;
 
@@ -94,19 +78,10 @@ const updateUserInfo = (req, res) => {
   )
     .orFail()
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(404);
-      } else if (err.name === 'ValidationError') {
-        res.status(400);
-      } else {
-        res.status(500);
-      }
-      res.send({ message: err.message });
-    });
+    .catch(next);
 };
 
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   const userId = req.user._id;
 
@@ -117,16 +92,7 @@ const updateAvatar = (req, res) => {
   )
     .orFail()
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(404);
-      } else if (err.name === 'ValidationError') {
-        res.status(400);
-      } else {
-        res.status(500);
-      }
-      res.send({ message: err.message });
-    });
+    .catch(next);
 };
 
 module.exports = {
