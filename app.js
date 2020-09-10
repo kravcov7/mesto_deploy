@@ -13,6 +13,7 @@ const cardsRouter = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const { urlValidator } = require('./models/urlVaidator');
 const { auth } = require('./middlewares/auth');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const app = express();
 
@@ -25,6 +26,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(requestLogger);
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
@@ -48,6 +50,7 @@ app.use('/cards', cardsRouter);
 app.use((req, res) => {
   res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
 });
+app.use(errorLogger);
 app.use(errors());
 
 // eslint-disable-next-line no-unused-vars
