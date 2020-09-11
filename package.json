@@ -1,7 +1,7 @@
 {
   "name": "sprint15",
   "version": "1.0.0",
-  "description": "REST API for maesto & BD",
+  "description": "deploy beckend",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",

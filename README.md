@@ -2,6 +2,10 @@
 # Mesto Backend
 Backend для сервиса [Mesto](https://kravcov7.github.io/sprint11/). Учебный проект YPractikum(sprint 15)
 
+## Доступ
++ IP-адрес 178.154.227.48
++ домен https://mesto-ametist.ru/
+
 ## Стек
 + HTML
 + CSS
