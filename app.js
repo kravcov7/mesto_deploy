@@ -53,9 +53,6 @@ app.post('/signin', celebrate({
 app.use(auth);
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
-app.use((req, res) => {
-  res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
-});
 app.use(errorLogger);
 app.use(errors());
 
